@@ -39,9 +39,11 @@ double TP;
 
 void Get_Sensor_Data(IMU_VAR *pIMU);
 void send_ahrs_msg();
+void send_imu_msg();
 void send_heartbeat();
 void send_status();
 void handle_Messages();
+
 
 
 
@@ -129,6 +131,7 @@ void loop()
   if((micros() - ahrsTimer) > ahrsInterval)
   {
     send_ahrs_msg(); 
+    send_imu_msg(); 
     ahrsTimer = micros();
   }
 
@@ -274,11 +277,37 @@ void send_heartbeat(){
 void send_ahrs_msg(){
     memset(bufTx, 0xFF, sizeof(bufTx));
     mavlink_msg_attitude_pack(mavlink_system.sysid, mavlink_system.compid, &ahrsMsg,
-      bootTime, IMU.Gyro[0] * rad2deg, IMU.Gyro[0] * rad2deg, IMU.Gyro[0] * rad2deg,
-      IMU.Gyro[0] * rad2deg, IMU.Gyro[0] * rad2deg, IMU.Gyro[0] * rad2deg);
+                              bootTime,
+                              IMU.Roll,
+                              IMU.Pitch,
+                              IMU.Yaw,
+                              IMU.Gyro[0] * rad2deg,
+                              IMU.Gyro[1] * rad2deg,
+                              IMU.Gyro[2] * rad2deg);
     
     /// Copy the message to send buffer
     uint16_t len = mavlink_msg_to_send_buffer(bufTx, &ahrsMsg);
+
+     //Write Message    
+    Serial.write(bufTx, len);  
+}
+
+void send_imu_msg(){
+    memset(bufTx, 0xFF, sizeof(bufTx));
+    mavlink_msg_raw_imu_pack(mavlink_system.sysid, mavlink_system.compid, &imuMsg,
+                              bootTime,
+                              IMU.Acc[0],
+                              IMU.Acc[1],
+                              IMU.Acc[2],
+                              IMU.Gyro[0] * rad2deg,
+                              IMU.Gyro[1] * rad2deg,
+                              IMU.Gyro[2] * rad2deg,
+                              IMU.Mag[0],
+                              IMU.Mag[1],
+                              IMU.Mag[2]);
+    
+    /// Copy the message to send buffer
+    uint16_t len = mavlink_msg_to_send_buffer(bufTx, &imuMsg);
 
      //Write Message    
     Serial.write(bufTx, len);  
@@ -416,7 +445,7 @@ void handle_Messages(){
           // break;
 
         }
-      }
+      
     }
 
 }

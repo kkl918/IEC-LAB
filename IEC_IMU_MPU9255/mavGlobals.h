@@ -35,6 +35,7 @@ mavlink_message_t         paramMsg;
 mavlink_message_t         rc_overMsg;
 mavlink_message_t         statMsg;
 mavlink_message_t         msg;
+mavlink_message_t         imuMsg;
 mavlink_manual_control_t  manual_control;
 mavlink_set_mode_t        mode;
 mavlink_heartbeat_t       heartbeat;
